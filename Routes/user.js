@@ -1,14 +1,31 @@
 const express = require('express')
 const route = express.Router()
-const {addUser} = require('../Models/UserModel')
+const bcrypt = require('bcryptjs')
+const { addUser, validateUser } = require('../Models/UserModel')
 
-route.get('/signup', async (req, res) => {
-    // save req.body after validation
-    const user = await addUser(req.body)
-    if(user){
-    return res.status(200).json({message : user})}
-    else{
-    return res.status(500).json({message : 'An error occured'})}
+route.post('/signUp', async (req, res) => {
+    const { error } = validateUser(req.body)
+    if (error) {
+        return res.status(500).json({ message: error })
+    }
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(req.body.password, salt)
+    if (hashedPassword) {
+        const registrationData = { ...req.body, password: hashedPassword }
+        const { status, result } = await addUser(registrationData)
+        if (status) {
+            return res.status(200).json({ message: result })
+        }
+        else {
+            return res.status(500).json({ message: result })
+        }
+    } else {
+        return res.status(500).json({ message: 'Something went wrong registering user data, Hashing error' })
+    }
+})
+
+route.post('/login', (req, res) => {
+    // insert token generation here
 })
 
 module.exports = route
