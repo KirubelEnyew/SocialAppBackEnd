@@ -1,6 +1,7 @@
 const express = require('express')
 const route = express.Router()
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const { addUser, validateUser, existingEmail } = require('../Models/UserModel')
 
 route.post('/signUp', async (req, res) => {
@@ -21,17 +22,22 @@ route.post('/signUp', async (req, res) => {
         if (status) {
             return res.status(200).json({ message: result })
         }
-        else {
-            return res.status(500).json({ message: result })
-        }
-    } else {
-        return res.status(500).json({ message: 'Something went wrong registering user data, Hashing error' })
+        return res.status(500).json({ message: result })
     }
+    return res.status(500).json({ message: 'Something went wrong registering user data, Hashing error' })
 })
 
-route.post('/login', (req, res) => {
-    // insert token generation here
-    // fetch from db with email and then bcrypt compare with req.body
+route.post('/login', async (req, res) => {
+    const user = await existingEmail(req.body.email)
+    if (user) {
+        const comparePassword = await bcrypt.compare(req.body.password, user.password)
+        if (comparePassword) {
+            const token = jwt.sign({ id: user._id }, process.env.TOKEN_KEY)
+            return res.status(200).json({ message: 'Logged in successfully', token })
+        }
+        return res.status(400).json({ message: 'Incorrect password' })
+    }
+    return res.status(404).json({ message: 'Email not found' })
 })
 
 module.exports = route
