@@ -7,11 +7,11 @@ route.post('/signUp', async (req, res) => {
     const { error } = validateUser(req.body)
     // the 2 ifs below should have status codes for bad data
     if (error) {
-        return res.status(500).json({ message: error })
+        return res.status(400).json({ message: error })
     }
     const emailExists = await existingEmail(req.body.email)
     if (emailExists) {
-        return res.status(500).json({ message: 'Email already exists', exists: true })
+        return res.status(409).json({ message: 'Email already exists', exists: true })
     }
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
