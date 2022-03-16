@@ -42,6 +42,10 @@ const validateUser = (newUser) => {
     return validationSchema.validate(newUser)
 }
 
+const existingEmail = (email) => UserModel.findOne(email).then((result) => result)
+
+
 exports.User = UserModel
 exports.addUser = addUser
 exports.validateUser = validateUser
+exports.existingEmail = existingEmail
