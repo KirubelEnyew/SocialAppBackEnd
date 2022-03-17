@@ -42,6 +42,7 @@ const validateUser = (newUser) => {
     return validationSchema.validate(newUser)
 }
 
+// change this with an exists query
 const existingEmail = (email) => UserModel.findOne({ email }).then((result) => result)
 
 
