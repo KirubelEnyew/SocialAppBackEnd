@@ -22,7 +22,8 @@ const UserSchema = mongoose.Schema({
         minLength: 9,
         maxLength: 9,
         required: true
-    }
+    },
+    profileImage: String
 })
 
 const UserModel = mongoose.model('users', UserSchema)
