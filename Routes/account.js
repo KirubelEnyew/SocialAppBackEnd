@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs')
 const express = require('express')
 const auth = require('../Middleware/auth')
 const route = express.Router()
@@ -21,8 +22,9 @@ route.post('/updateProfile', auth, async (req, res) => {
 })
 
 route.post('/updateProfileImage', auth, (req, res) => {
-    // must find a solution
-    User.updateOne({ _id: req.payload.id }, { $set: { image: req.body.image } }).
+    // can use strict false to add non existing field
+    // shouldnt for security purposes?
+    User.updateOne({ _id: req.payload.id }, { $set: { profileImage: req.body.image } }).
         then(({ acknowledged }) => {
             if (acknowledged) {
                 return res.status(200).json({ message: 'Image added successfully', success: true })
@@ -32,5 +34,19 @@ route.post('/updateProfileImage', auth, (req, res) => {
         catch(() => {
             return res.status(500).json({ message: 'Failed to add profile image', success: false })
         })
+})
+
+route.post('/deleteAccount', auth, (req, res) => {
+    const user = User.findById(req.payload.id)
+    if (user) {
+        const comparePassword = await bcrypt.compare(req.body.password, user.password)
+        if (comparePassword) {
+            User.findOneAndDelete({ _id: req.payload.id, password: req.body.password }).
+                then(() => res.status(200).json({ message: 'Account deleted successfully' })).
+                catch((error) => res.status(500).json({ message: error }))
+        }
+        return res.status(400).json({ message: 'Password incorrect' })
+    }
+    return res.status(404).json({ message: 'User not found' })
 })
 module.exports = route
