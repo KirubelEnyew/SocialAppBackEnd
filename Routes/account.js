@@ -24,6 +24,7 @@ route.post('/updateProfile', auth, async (req, res) => {
 route.post('/updateProfileImage', auth, (req, res) => {
     // can use strict false to add non existing field
     // shouldnt for security purposes?
+    // read up on proper way for uploading and compressing base64 data
     User.updateOne({ _id: req.payload.id }, { $set: { profileImage: req.body.image } }).
         then(({ acknowledged }) => {
             if (acknowledged) {
@@ -36,14 +37,16 @@ route.post('/updateProfileImage', auth, (req, res) => {
         })
 })
 
-route.post('/deleteAccount', auth, (req, res) => {
-    const user = User.findById(req.payload.id)
+route.post('/deleteAccount', auth, async (req, res) => {
+    const user = await User.findById(req.payload.id)
     if (user) {
         const comparePassword = await bcrypt.compare(req.body.password, user.password)
         if (comparePassword) {
-            User.findOneAndDelete({ _id: req.payload.id, password: req.body.password }).
-                then(() => res.status(200).json({ message: 'Account deleted successfully' })).
-                catch((error) => res.status(500).json({ message: error }))
+            const { acknowledged } = await User.deleteOne({ _id: req.payload.id })
+            if (acknowledged) {
+                return res.status(200).json({ message: 'Account removed successfully' })
+            }
+            return res.status(500).json({ message: 'Failed to delete account' })
         }
         return res.status(400).json({ message: 'Password incorrect' })
     }
