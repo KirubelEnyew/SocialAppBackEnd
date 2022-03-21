@@ -5,6 +5,8 @@ const auth = require('../Middleware/auth')
 route.post('/sendMessage', auth, async (req, res) => {
     // try $elemMathc in another scenario 
     // would ,$or:[req.body.reciever,req.payload.id] be required in the query below 
+
+    // remember to add socket for sending the message as well
     const chatExists = await ChatModel.findOne({ participants: { $all: [req.payload.id, req.body.reciever] } })
     if (chatExists) {
         ChatModel.updateOne(chatExists,
