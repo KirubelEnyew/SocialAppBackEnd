@@ -9,12 +9,13 @@ const ChatSchema = mongoose.Schema({
         type: [{
             sender: String,
             message: String,
-            date: Date
+            date: Date,
+            edited: Boolean
         }],
         required: true
     }
 })
 
-const ChatModel = mongoose.model('ChatModel', ChatSchema)
+const ChatModel = mongoose.model('Chat', ChatSchema)
 
 exports.ChatModel = ChatModel
