@@ -12,7 +12,7 @@ route.post('/signUp', async (req, res) => {
     }
     const emailExists = await existingEmail(req.body.email)
     if (emailExists) {
-        return res.status(409).json({ message: 'Email already exists', exists: true })
+        return res.status(400).json({ message: 'Email already exists', exists: true })
     }
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
