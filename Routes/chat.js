@@ -64,4 +64,14 @@ route.post('/deleteChat', auth, (req, res) => {
         .catch(() => res.status(500).send({ message: 'Unable to delete chat history' }))
 })
 
+route.get('/searchChats', auth, async (req, res) => {
+    const searchResult = await ChatModel.aggregate([
+        { $match: { 'messages.message': { $text: { $search: req.query.searchQuery } } } },
+        { $match: { 'participants': req.payload.id } },
+        { $sort: { score: { $meta: 'textScore' } } },
+        { $project: { participants: 1, messages: 1 } }
+    ])
+    return res.status(200).json({ message: searchResult })
+})
+
 module.exports = route
